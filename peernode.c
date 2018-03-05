@@ -2,7 +2,7 @@
 #include <time.h>
 #include "peernode.h"
 
-#define PEER_TABLE_SIZE	513
+#define PEER_TABLE_SIZE	511
 #define PEER_ADR_CNT	3
 
 typedef struct sPeer {
@@ -13,8 +13,7 @@ typedef struct sPeer {
 PeerNode* PHT[PEER_TABLE_SIZE];
 
 static unsigned int get_hash(const IPV6_TYPE uuid);
-
-static int pnt_compare(PeerNode* node1, PeerNode* node2);
+//static int pnt_compare(PeerNode* node1, PeerNode* node2);
 
 Peer* new_peer(IPV6_TYPE uuid, IPV4_TYPE ip, PORT_TYPE port) {
 	Peer* inst = malloc(sizeof(Peer));
@@ -96,51 +95,80 @@ Peer* pnt_insert(const IPV6_TYPE uuid, const IPV4_TYPE ip, const PORT_TYPE port)
 
 int pnt_delete_node(const IPV6_TYPE uuid)
 {
+	PeerNode* pn = PHT[get_hash(uuid)];			
+	if(pn == NULL) return TRUE;	
 
-	PeerNode* tmp = NULL;
-	if(node != NULL)
+	PeerNode** lp = &PHT[hash];	
+	for( ; pn != NULL; pn = pn->pNext )
 	{
-		PeerNode* nodePrev = node->pPrev;
-		PeerNode* nodeNext = node->pNext;
-		free(node);
-		if(nodePrev != NULL)
+		if (id_cmp(uuid, pn->peer.uuid) == 0)
 		{
-			nodePrev->pNext = nodeNext;
-			tmp = nodePrev;
+			lp = &pn->pNext;
+			free(pn);
+			return TRUE;
 		}
-		
-		if(nodeNext != NULL)
-		{
-			nodeNext->pPrev = nodePrev;
-			if(tmp == NULL)
-				tmp = nodeNext;	
-		}				
+		*lp = pn->pNext;
 	}
-	return tmp;
+	return TRUE;
 }
 
-PeerNode* pnt_free(PeerNode* root)
+void pnt_free()
 {
-	if(root == NULL)	return NULL;
-	
-	while(root->pPrev != NULL)
-		root = root->pPrev;
-
+	PeerNode* pn = NULL;
 	PeerNode* tmp = NULL;
-	while(root != NULL) {
-		tmp = root;
-		root = root->pNext;
-		free(tmp);
+	for(int i = 0; i < PEER_TABLE_SIZE; i++)
+	{
+		pn = PHT[i];
+		while(pn != NULL)
+		{
+			tmp = pn->pNext;
+			free(pn);
+			pn = tmp;
+		}
+		PHT[i] = NULL;
 	}
-	return root;
 }
 
-void pnt_dump(PeerNode *node, unsigned int deep)
+void get_peer_view(char *pBuf, Peer *peer)
 {
-	print("UUID\t\t|IP:Port1\t\t|IP:Port2\n");
-    for ( ; node != NULL && deep > 0; node = node->pNext, deep-- ) 
-    {
-    	//todo print uuid and ip port
-    	
+	//out ipv6
+	unsigned int i = 0;
+	unsigned int* pID = peer->uuid;
+    sprintf(pBuf, "%04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X\t", pUUID[i++], pUUID[i++], pUUID[i++], pUUID[i++], pUUID[i++], pUUID[i++], pUUID[i++], pUUID[i++]);
+    
+    pBuf += strlen(pBuf);        
+    pID = peer->address1.ip;
+    unsigned int port = peer->address1.port;
+    sprintf(pBuf, "%d.%d.%d.%d:%d\t", pID[i++], pID[i++], pID[i++], pID[i++], port);
+    
+    pBuf += strlen(pBuf);    
+    i = 0;
+    pID = peer->address2.ip;
+    port = peer->address2.port;
+    sprintf(pBuf, "%d.%d.%d.%d:%d\t", pID[i++], pID[i++], pID[i++], pID[i++], port);    
+}
+
+void pnt_dump(unsigned int deep)
+{		
+	int deep_control = deep > 0;
+	char buf[256];	
+	PeerNode* pn = NULL;
+	Peer* peer = NULL;
+	print("UUID\t\t\t\t|IP:Port1\t\t\t\t|IP:Port2\r\n");
+	print("|-----------------------------------------------------------------------------------------------------------------------------|\r\n");
+	for (int i = 0; i < PEER_TABLE_SIZE; i++,deep--) 
+    {    	
+    	pn = DHT[i];
+    	while(pn != NULL)
+    	{        			
+    		get_peer_view(buf, pn->peer);
+    		strcat(buf, "\r\n");
+    		print(buf);
+    		pn = pn->pNext;
+
+    		if(deep_control && --deep == 0)
+    			return;
+    	}    	
     }    	
+    print("|-----------------------------------------------------------------------------------------------------------------------------|\r\n");
 }

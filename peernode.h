@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 typedef unsigned char IPV6_TYPE[16];
-typedef unsigned char IPV4_TYPE[4];
+typedef unsigned char IPV4_TYPE[8];
 typedef unsigned short PORT_TYPE;
 
 
@@ -34,6 +34,7 @@ Peer* pnt_insert(Peer* new_peer);
 Peer* pnt_delete_node(IPV6_TYPE uuid);
 Peer* pnt_free(IPV6_TYPE uuid);
 Peer* pnt_get_peer(IPV6_TYPE uuid);
+void get_peer_view(char *pBuf, Peer *peer);
 void pnt_dump(unsigned int deep);
 
 #ifdef __cplusplus

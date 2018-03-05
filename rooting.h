@@ -7,9 +7,10 @@
 extern "C" {
 #endif
 
-typedef struct __rooting_entity{
+typedef struct sRootingEntity{
 	Peer peer;
-	unsigned short shared;		/* how many peers have this node in its root table (kirkorov degree) */
+	IPV6_TYPE net_mask;
+	unsigned short shared;		/* how many peers have this node in its root table */
 	short hits_per100;			/* moving average of paths found for last 100 requests */
 	unsigned short path_get;
 	unsigned short path_req;
@@ -18,7 +19,7 @@ typedef struct __rooting_entity{
 	time_t reply_time;          /* time of last correct reply received */
     time_t pinged_time;         /* time of last request */	
     int pinged;                 /* how many requests we sent since last reply */
-	RootingEntity* pNext;
+	sRootingEntity* pNext;
 } RootingEntity;
 
 // typedef struct {

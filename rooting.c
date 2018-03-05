@@ -34,10 +34,10 @@ int rt_compare(RootingEntity* node1, RootingEntity* node2) {
 RootingEntity* rt_insert(RootingEntity* node, Peer* src_peer)
 {
 	RootingEntity* tmp = malloc(sizeof(RootingEntity));
+	memset(tmp, 0, sizeof(RootingEntity));
 	if(tmp != NULL)
 	{
 		memcpy(&tmp->peer, src_peer, sizeof(Peer));	
-		tmp->hits_per100 = 100;
 		if(node == NULL)
 		{
 			tmp->pNext = NULL;
@@ -113,9 +113,15 @@ RootingEntity* rt_get_node(RootingEntity* root, IPV6_TYPE uuid)
 	return rt_ent;	
 }
 
+void rt_get_root_view rt_get_node_view(RootingEntity *node)
+{
+
+}
+
 void rt_dump(RootingEntity *node, unsigned int deep)
 {
 	print("UUID\t\t|IP:Port\t\t|path_get\t|path_req\n");
+	//char buf[256];	
     for ( ; node != NULL && deep > 0; node = node->pNext, deep-- ) 
     {
     	//todo print uuid and ip port
